@@ -64,11 +64,38 @@ public final class SelfCheck {
                     case CREDIT -> running.add(t.amount());
                 };
             }
+            System.out.println("           transactions:");
+
+            for (NormalizedTxn t : ledger) {
+                if (t.accountLast4().equals(e.getKey())) {
+                    System.out.printf(
+                            "             %s | %s | %s | %s | %s%n",
+                            t.occurredAt(),
+                            t.direction(),
+                            t.amount(),
+                            t.category(),
+                            t.merchant()
+                    );
+                }
+            }
+
             System.out.printf("  **%s  txns %d (expected %s)%n",
                     e.getKey(), n, a.get("transactions_expected"));
             System.out.printf("           balance from ledger %s, bank says %s, difference %s%n",
                     running.toPlainString(), closing.toPlainString(),
                     running.subtract(closing).toPlainString());
+
+            System.out.println("           category breakdown:");
+
+            for (Category c : Category.values()) {
+                BigDecimal total = ledger.stream()
+                        .filter(t -> t.accountLast4().equals(e.getKey()))
+                        .filter(t -> t.category() == c)
+                        .map(NormalizedTxn::amount)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                System.out.printf("             %-9s %12s%n", c, total.toPlainString());
+            }
         }
         System.out.println("\nThis is the starting point, not the finish line.");
     }
