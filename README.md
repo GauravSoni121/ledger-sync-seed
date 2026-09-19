@@ -195,3 +195,48 @@ Then:
   could have asked is a worse signal than asking.
 
 `talent.acquisition@simplifymoney.in`
+
+
+
+
+---
+
+## Decision Log
+
+1. **Java:** Kept the implementation in Java because the seed project and frozen contract tests are Java-based.
+
+2. **Email parsing:** Added an `EmailParser` to extract account, direction, amount, date and merchant information from email alerts.
+
+3. **ICICI parsing:** Extended `IciciSmsParser` to support an additional ICICI SMS format found in the corpus.
+
+4. **Deduplication:** Added transaction deduplication using account, event time, direction, amount and normalized merchant information while retaining all source message IDs.
+
+5. **Categories:** Added `MICRO` handling for small UPI debits and `TRANSFER` handling for own-account movements.
+
+6. **Document store:** Chose MongoDB because it can run locally with Docker Compose and supports the required query patterns with indexes.
+
+7. **Backfill:** Made backfill safe to rerun by skipping duplicate SQL rows and using MongoDB upserts.
+
+8. **Consistency checking:** Compared transaction fields and source message IDs instead of relying only on row counts.
+
+9. **Incident fix:** Updated amount extraction to support both integer and decimal rupee amounts after reproducing the HDFC `Rs.5` incident.
+
+10. **Testing:** Added tests for email parsing, ICICI parsing, incident regression, reporting, backfill and consistency checking.
+
+## AI Disclosure
+
+I used AI assistance for code explanation, debugging ideas, test-case suggestions and reviewing implementation approaches.
+
+One case where an AI suggestion did not solve the problem was the ₹7,087.33 spending difference for account 4821. An initial timestamp-normalization suggestion did not resolve the discrepancy, so I investigated the implementation and corpus further.
+
+AI suggestions were reviewed and tested locally before being used.
+
+## Verification
+
+The implementation was verified using:
+
+```bash
+./gradlew clean test
+./gradlew run --args="migrate"
+./gradlew run --args="ingest fixtures/corpus-a.jsonl"
+./gradlew run --args="report submission/"
