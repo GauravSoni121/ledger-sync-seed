@@ -13,9 +13,12 @@ import java.util.regex.Pattern;
 public final class Amounts {
 
     private Amounts() {}
-
     private static final Pattern AMOUNT =
-            Pattern.compile("(?:Rs\\.?|INR)\\s*([0-9,]+\\.[0-9]{2})");
+            Pattern.compile(
+                    "(?:Rs\\.?|INR|₹)\\s*"
+                            + "([0-9,]+(?:\\.[0-9]{1,2})?|[0-9]+(?:\\.[0-9]+)?\\s*[Kk])",
+                    Pattern.CASE_INSENSITIVE
+            );
 
     private static final Pattern BALANCE = Pattern.compile(
             "(?:Avl\\s*Bal|Available\\s*Balance|BalAvl|Avl\\s*Limit)\\s*:?\\s*"
